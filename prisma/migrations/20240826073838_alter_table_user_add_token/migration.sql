@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "refreshToken" DROP DEFAULT,
+ALTER COLUMN "token" DROP DEFAULT;
