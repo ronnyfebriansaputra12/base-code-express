@@ -1,21 +1,22 @@
 import prisma from "../db/index.js";
 
-const findProducts = async () => {
+const findProducts = async (offset, limit) => {
     const products = await prisma.product.findMany({
-        include: {
-            kategori: true
-        },
+        skip: offset,
+        take: parseInt(limit)
     });
     return products;
-}
+};
+
+const countTotalProducts = async () => {
+    const total = await prisma.product.count();
+    return total;
+};
 
 const findProductById = async (id) => {
     const product = await prisma.product.findUnique({
         where: {
             id,
-        },
-        include: {
-            kategori: true
         },
     });
     return product;
@@ -25,10 +26,8 @@ const insertProduct = async (productData) => {
     const product = await prisma.product.create({
         data: {
             name: productData.name,
-            kategori_id: productData.kategori_id,
             description: productData.description,
-            price: productData.price,
-            image: productData.image
+            price: productData.price
         }
     });
     return product;
@@ -43,21 +42,28 @@ const deletetById = async (id) => {
     return product;
 }
 
-const editProduct = async (productData, id) =>{
+const editProduct = async (productData, id) => {
     const product = await prisma.product.update({
         where: {
             id
         },
         data: {
             name: productData.name,
-            kategori_id: productData.kategori_id,
             description: productData.description,
             price: productData.price,
-            image: productData.image
         }
     });
 
     return product;
 }
 
-export default { findProducts, findProductById, insertProduct, deletetById, editProduct }
+const findProductByName = async (name) => {
+    return await prisma.product.findFirst({
+        where: {
+            name: name,
+        },
+    });
+};
+
+
+export default { findProducts, findProductById, insertProduct, deletetById, editProduct, findProductByName, countTotalProducts }

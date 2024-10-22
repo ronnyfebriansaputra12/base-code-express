@@ -10,13 +10,20 @@ const { getAllProducts, getProductById, createProduct, deleteProductById, update
 
 
 router.get("/", async (req, res) => {
-    const products = await getAllProducts();
+    const { page = 1, limit = 10 } = req.query;
+    const products = await getAllProducts(page, limit);
     res.json({
         success: true,
         message: "Products fetched successfully",
-        data: products
-    })
-})
+        data: products.data,
+        meta: {
+            totalItems: products.totalItems,
+            totalPages: products.totalPages,
+            currentPage: page
+        }
+    });
+});
+
 
 router.get("/:id", async (req, res) => {
     try {
@@ -35,18 +42,27 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.post("/", upload.single('image'), async (req, res) => {
-    try {
-        const productData = {
-            ...req.body,
-            kategori_id: parseInt(req.body.kategori_id, 10),
-            price: parseInt(req.body.price, 10),
-        };
-        const newProduct = await createProduct(productData, req.file);
 
-        res.status(201).json({ message: 'Product created successfully', product: newProduct });
+router.post("/", async (req, res) => {
+    try {
+        const productData = req.body;        
+        if (!(productData.description && productData.price && productData.name)) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+        const newProduct = await productService.createProduct(productData);
+        res.json({
+            success: true,
+            message: "Product created successfully",
+            data: newProduct
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Error creating product', error: error.message });
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 
@@ -68,24 +84,26 @@ router.delete("/:id", async (req, res) => {
 
 })
 
+
 router.put("/:id", async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const productData = req.body;
-        if (!(productData.image && productData.description && productData.price && productData.name)) {
+        if (!(productData.description && productData.price && productData.name)) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required",
             });
         }
-        const product = await updateProductById(productData, id);
-        res.status(200).json({
+        const product = await productService.updateProductById(productData, id);
+        res.json({
             success: true,
             message: "Product updated successfully",
             data: product
         });
+
     } catch (error) {
-        res.status(400).json({
+        res.json({
             success: false,
             message: error.message
         });

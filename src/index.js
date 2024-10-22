@@ -17,10 +17,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/products", verifyToken, productController);
-app.use("/api/categories", verifyToken, categoriesController);
-app.use("/api/users", verifyToken, userController);
-app.use("/api", AuthController);
+app.use("/api/products", productController);
+// app.use("/api/categories", categoriesController);
+// app.use("/api/users", userController);
+// app.use("/api", AuthController);
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
